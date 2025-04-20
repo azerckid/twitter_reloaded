@@ -8,12 +8,17 @@ import styled, { createGlobalStyle } from "styled-components";
 import reset from "styled-reset";
 import { useState, useEffect } from "react";
 import LoadingScreen from "./components/loading-screen.tsx";
-import { auth } from "./routes/firebase.ts";
+import { auth } from "./firebase.ts";
+import ProtectedRoute from "./components/protected-route.tsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Layout />,
+    element: (
+      <ProtectedRoute>
+        <Layout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: "",
@@ -37,7 +42,6 @@ const router = createBrowserRouter([
 
 const GlobalStyles = createGlobalStyle`
    ${reset};
-   @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
    * {
      box-sizing: border-box;
    }
