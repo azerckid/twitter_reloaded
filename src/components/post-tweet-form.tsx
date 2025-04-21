@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { styled } from "styled-components";
-import { db } from "../firebase";
+import { getFirebaseAuth, getFirebaseDb } from "../firebase";
 import { addDoc, collection } from "firebase/firestore";
-import { auth } from "../firebase";
 
 const Form = styled.form`
    display: flex;
@@ -110,7 +109,7 @@ export default function PostTweetForm() {
 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const user = auth.currentUser;
+        const user = getFirebaseAuth().currentUser;
         if (!user) return;
         if (isLoading) return;
         if (tweet === "") {
@@ -124,7 +123,7 @@ export default function PostTweetForm() {
 
         try {
             setLoading(true);
-            await addDoc(collection(db, "tweets"), {
+            await addDoc(collection(getFirebaseDb(), "tweets"), {
                 tweet,
                 createdAt: Date.now(),
                 username: user.displayName || "Anonymous",

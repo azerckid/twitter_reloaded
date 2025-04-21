@@ -1,5 +1,5 @@
 import { styled } from "styled-components";
-import { auth, db } from "../firebase";
+import { getFirebaseAuth, getFirebaseDb } from "../firebase";
 import { useEffect, useState } from "react";
 import { Unsubscribe, updateProfile } from "firebase/auth";
 import {
@@ -108,14 +108,14 @@ const Tweets = styled.div`
 `;
 
 export default function Profile() {
-    const user = auth.currentUser;
+    const user = getFirebaseAuth().currentUser;
     const [avatar, setAvatar] = useState(user?.photoURL);
     const [tweets, setTweets] = useState<ITweet[]>([]);
     const [isEditing, setIsEditing] = useState(false);
     const [newDisplayName, setNewDisplayName] = useState(user?.displayName ?? "Anonymous");
 
     const fetchUserProfile = async (userId: string) => {
-        const userProfileRef = doc(db, "userProfile", userId);
+        const userProfileRef = doc(getFirebaseDb(), "userProfile", userId);
         const profileSnapshot = await getDoc(userProfileRef);
         if (profileSnapshot.exists()) {
             const data = profileSnapshot.data() as UserProfile;
@@ -145,7 +145,7 @@ export default function Profile() {
                 const avatarUrl = reader.result as string;
                 try {
                     // Save to Firestore
-                    const userProfileRef = doc(db, "userProfile", user.uid);
+                    const userProfileRef = doc(getFirebaseDb(), "userProfile", user.uid);
                     await setDoc(userProfileRef, {
                         userId: user.uid,
                         avatar: avatarUrl
@@ -165,15 +165,10 @@ export default function Profile() {
     const onNameChange = async () => {
         if (!user) return;
         try {
-            await updateProfile(user, {
-                displayName: newDisplayName,
-            });
+            await updateProfile(user, { displayName: newDisplayName });
             setIsEditing(false);
-            console.log("Display name updated successfully");
-        } catch (error) {
-            console.error("Error updating display name:", error);
-            const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.";
-            alert("이름 업데이트 중 오류가 발생했습니다: " + errorMessage);
+        } catch (e) {
+            console.error(e);
         }
     };
 
@@ -185,7 +180,7 @@ export default function Profile() {
                 return;
             }
             const tweetsQuery = query(
-                collection(db, "tweets"),
+                collection(getFirebaseDb(), "tweets"),
                 where("userId", "==", user.uid),
                 orderBy("createdAt", "desc"),
                 limit(25)

@@ -5,11 +5,13 @@ import {
     orderBy,
     query,
 } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { styled } from "styled-components";
-import { db } from "../firebase";
-import Tweet from "./tweet";
+import { getFirebaseDb } from "../firebase";
 import { Unsubscribe } from "firebase/auth";
+import LoadingScreen from "./loading-screen";
+
+const Tweet = lazy(() => import("./tweet"));
 
 export interface ITweet {
     id: string;
@@ -39,7 +41,7 @@ export default function Timeline() {
         let unsubscribe: Unsubscribe | null = null;
         const fetchTweets = async () => {
             const tweetsQuery = query(
-                collection(db, "tweets"),
+                collection(getFirebaseDb(), "tweets"),
                 orderBy("createdAt", "desc"),
                 limit(25)
             );
@@ -78,7 +80,9 @@ export default function Timeline() {
     return (
         <Wrapper>
             {tweets.map((tweet) => (
-                <Tweet key={tweet.id} {...tweet} />
+                <Suspense key={tweet.id} fallback={<LoadingScreen />}>
+                    <Tweet {...tweet} />
+                </Suspense>
             ))}
         </Wrapper>
     );

@@ -1,9 +1,11 @@
 import { styled } from "styled-components";
 import { ITweet } from "./timeline";
-import { auth, db } from "../firebase";
+import { getFirebaseAuth, getFirebaseDb } from "../firebase";
 import { deleteDoc, doc } from "firebase/firestore";
 import { useState } from "react";
 import EditTweetForm from "./EditTweetForm";
+import { Button } from "./common/Button";
+import { formatDate } from "../utils/date-formatter";
 
 const Wrapper = styled.div`
    display: grid;
@@ -42,42 +44,21 @@ const Payload = styled.p`
    font-size: 18px;
  `;
 
-const DeleteButton = styled.button`
-   background-color: tomato;
-   color: white;
-   font-weight: 600;
-   border: 0;
-   font-size: 12px;
-   padding: 5px 10px;
-   text-transform: uppercase;
-   border-radius: 5px;
-   cursor: pointer;
- `;
-
-const EditButton = styled.button`
-   background-color: #1d9bf0;
-   color: white;
-   font-weight: 600;
-   border: 0;
-   font-size: 12px;
-   padding: 5px 10px;
-   text-transform: uppercase;
-   border-radius: 5px;
-   cursor: pointer;
-   margin-left: 10px;
+const ButtonContainer = styled.div`
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
 `;
 
-
-
 export default function Tweet({ username, photo, tweet, userId, id, createdAt }: ITweet) {
-    const user = auth.currentUser;
+    const user = getFirebaseAuth().currentUser;
     const [isEditing, setIsEditing] = useState(false);
 
     const onDelete = async () => {
         const ok = confirm("삭제하시겠습니까?");
         if (!ok) return;
         try {
-            await deleteDoc(doc(db, "tweets", id));
+            await deleteDoc(doc(getFirebaseDb(), "tweets", id));
         } catch (error) {
             console.log(error);
         }
@@ -95,13 +76,17 @@ export default function Tweet({ username, photo, tweet, userId, id, createdAt }:
         <Wrapper>
             <Column>
                 <Username>{username}</Username>
-                <TimeStamp>{new Date(createdAt).toLocaleString()}</TimeStamp>
+                <TimeStamp>{formatDate(createdAt)}</TimeStamp>
                 <Payload>{tweet}</Payload>
                 {user?.uid === userId ? (
-                    <>
-                        <DeleteButton onClick={onDelete}>Delete</DeleteButton>
-                        <EditButton onClick={onEdit}>Edit</EditButton>
-                    </>
+                    <ButtonContainer>
+                        <Button small danger onClick={onDelete}>
+                            Delete
+                        </Button>
+                        <Button small primary onClick={onEdit}>
+                            Edit
+                        </Button>
+                    </ButtonContainer>
                 ) : null}
                 {isEditing && (
                     <EditTweetForm

@@ -1,42 +1,62 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import Layout from "./components/layout";
-import Home from "./routes/home.tsx";
-import Profile from "./routes/profile.tsx";
-import Login from "./routes/login.tsx";
-import CreateAccount from "./routes/create-account.tsx";
+import { useState, useEffect, lazy, Suspense } from "react";
+import { getFirebaseAuth } from "./firebase";
 import styled, { createGlobalStyle } from "styled-components";
 import reset from "styled-reset";
-import { useState, useEffect } from "react";
 import LoadingScreen from "./components/loading-screen.tsx";
-import { auth } from "./firebase.ts";
 import ProtectedRoute from "./components/protected-route.tsx";
+
+// Lazy load route components
+const Layout = lazy(() => import("./components/layout"));
+const Home = lazy(() => import("./routes/home"));
+const Profile = lazy(() => import("./routes/profile"));
+const Login = lazy(() => import("./routes/login"));
+const CreateAccount = lazy(() => import("./routes/create-account"));
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: (
       <ProtectedRoute>
-        <Layout />
+        <Suspense fallback={<LoadingScreen />}>
+          <Layout />
+        </Suspense>
       </ProtectedRoute>
     ),
     children: [
       {
         path: "",
-        element: <Home />,
+        element: (
+          <Suspense fallback={<LoadingScreen />}>
+            <Home />
+          </Suspense>
+        ),
       },
       {
         path: "profile",
-        element: <Profile />,
+        element: (
+          <Suspense fallback={<LoadingScreen />}>
+            <Profile />
+          </Suspense>
+        ),
       },
     ],
   },
   {
     path: "/login",
-    element: <Login />,
+    element: (
+      <Suspense fallback={<LoadingScreen />}>
+        <Login />
+      </Suspense>
+    ),
   },
   {
     path: "/create-account",
-    element: <CreateAccount />,
+    element: (
+      <Suspense fallback={<LoadingScreen />}>
+        <CreateAccount />
+      </Suspense>
+    ),
   },
 ]);
 
@@ -61,7 +81,7 @@ const Wrapper = styled.div`
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const init = async () => {
-    await auth.authStateReady();
+    await getFirebaseAuth().authStateReady();
     setIsLoading(false);
   };
 

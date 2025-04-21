@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { auth } from "../firebase";
+import { getFirebaseAuth } from "../firebase";
 import { Link, useNavigate } from "react-router-dom";
 import { FirebaseError } from "firebase/app";
 import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
@@ -43,10 +43,9 @@ export default function Login() {
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (isLoading || email === "" || password === "") return;
-        setError("");
         try {
             setLoading(true);
-            await signInWithEmailAndPassword(auth, email, password);
+            await signInWithEmailAndPassword(getFirebaseAuth(), email, password);
             navigate("/");
         } catch (e) {
             if (e instanceof FirebaseError) {
@@ -70,7 +69,7 @@ export default function Login() {
         }
         try {
             setLoading(true);
-            await sendPasswordResetEmail(auth, email);
+            await sendPasswordResetEmail(getFirebaseAuth(), email);
             setResetSent(true);
             setError("");
         } catch (e) {

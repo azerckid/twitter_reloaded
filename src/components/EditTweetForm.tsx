@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { styled } from "styled-components";
-import { db } from "../firebase";
+import { getFirebaseDb } from "../firebase";
 import { updateDoc, doc } from "firebase/firestore";
 
 const EditForm = styled.form`
@@ -88,7 +88,7 @@ export default function EditTweetForm({ id, tweet, photo, onCancel }: EditTweetF
     const onEditSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            await updateDoc(doc(db, "tweets", id), {
+            await updateDoc(doc(getFirebaseDb(), "tweets", id), {
                 tweet: editTweet,
                 photo: editPhoto,
             });

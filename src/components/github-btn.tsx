@@ -1,6 +1,6 @@
-import { GithubAuthProvider, signInWithPopup } from "firebase/auth";
 import { styled } from "styled-components";
-import { auth } from "../firebase";
+import { GithubAuthProvider, signInWithPopup } from "firebase/auth";
+import { getFirebaseAuth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { FirebaseError } from "firebase/app";
 
@@ -28,6 +28,7 @@ export default function GithubButton() {
     const navigate = useNavigate();
     const onClick = async () => {
         try {
+            const auth = getFirebaseAuth();
             const provider = new GithubAuthProvider();
             await signInWithPopup(auth, provider);
             navigate("/");

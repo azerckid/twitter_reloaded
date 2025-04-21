@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "../firebase.ts";
+import { getFirebaseAuth } from "../firebase";
 import { Link, useNavigate } from "react-router-dom";
 import { FirebaseError } from "firebase/app";
 import {
@@ -39,8 +39,7 @@ export default function CreateAccount() {
         setError("");
         try {
             setLoading(true);
-            const credentials = await createUserWithEmailAndPassword(auth, email, password);
-            console.log(credentials);
+            const credentials = await createUserWithEmailAndPassword(getFirebaseAuth(), email, password);
             await updateProfile(credentials.user, {
                 displayName: name,
             });
