@@ -1,5 +1,9 @@
 import { styled } from "styled-components";
 import { ITweet } from "./timeline";
+import { auth, db } from "../firebase";
+import { deleteDoc, doc } from "firebase/firestore";
+import { useState } from "react";
+import EditTweetForm from "./EditTweetForm";
 
 const Wrapper = styled.div`
    display: grid;
@@ -11,8 +15,7 @@ const Wrapper = styled.div`
 
 const Column = styled.div`
    &:last-child {
-      display: flex;
-      justify-content: flex-end;
+      place-self: end;
    }
 `;
 
@@ -28,23 +31,88 @@ const Username = styled.span`
    font-size: 15px;
  `;
 
+const TimeStamp = styled.span`
+    margin-left: 10px;
+    font-size: 12px;
+    color: #888;
+`;
+
 const Payload = styled.p`
    margin: 10px 0px;
    font-size: 18px;
  `;
 
-export default function Tweet({ username, photo, tweet }: ITweet) {
+const DeleteButton = styled.button`
+   background-color: tomato;
+   color: white;
+   font-weight: 600;
+   border: 0;
+   font-size: 12px;
+   padding: 5px 10px;
+   text-transform: uppercase;
+   border-radius: 5px;
+   cursor: pointer;
+ `;
+
+const EditButton = styled.button`
+   background-color: #1d9bf0;
+   color: white;
+   font-weight: 600;
+   border: 0;
+   font-size: 12px;
+   padding: 5px 10px;
+   text-transform: uppercase;
+   border-radius: 5px;
+   cursor: pointer;
+   margin-left: 10px;
+`;
+
+
+
+export default function Tweet({ username, photo, tweet, userId, id, createdAt }: ITweet) {
+    const user = auth.currentUser;
+    const [isEditing, setIsEditing] = useState(false);
+
+    const onDelete = async () => {
+        const ok = confirm("삭제하시겠습니까?");
+        if (!ok) return;
+        try {
+            await deleteDoc(doc(db, "tweets", id));
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const onEdit = () => {
+        setIsEditing(true);
+    };
+
+    const onCancel = () => {
+        setIsEditing(false);
+    };
+
     return (
         <Wrapper>
             <Column>
                 <Username>{username}</Username>
+                <TimeStamp>{new Date(createdAt).toLocaleString()}</TimeStamp>
                 <Payload>{tweet}</Payload>
+                {user?.uid === userId ? (
+                    <>
+                        <DeleteButton onClick={onDelete}>Delete</DeleteButton>
+                        <EditButton onClick={onEdit}>Edit</EditButton>
+                    </>
+                ) : null}
+                {isEditing && (
+                    <EditTweetForm
+                        id={id}
+                        tweet={tweet}
+                        photo={photo || null}
+                        onCancel={onCancel}
+                    />
+                )}
             </Column>
-            {photo ? (
-                <Column>
-                    <Photo src={photo} />
-                </Column>
-            ) : null}
+            <Column>{photo ? <Photo src={photo} /> : null}</Column>
         </Wrapper>
     );
 }
