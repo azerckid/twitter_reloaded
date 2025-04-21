@@ -46,7 +46,15 @@ export default function CreateAccount() {
             });
             navigate("/");
         } catch (e) {
-            setError(e instanceof FirebaseError ? e.message : "Unknown error");
+            if (e instanceof FirebaseError) {
+                if (e.code === "auth/email-already-in-use") {
+                    setError("이미 사용 중인 이메일입니다. 로그인을 시도해보세요.");
+                } else {
+                    setError(e.message);
+                }
+            } else {
+                setError("알 수 없는 오류가 발생했습니다.");
+            }
         } finally {
             setLoading(false);
         }
